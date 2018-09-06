@@ -39,7 +39,7 @@ os.system("sudo modprobe bcm2835_wdt")
 os.system("amixer set PCM --100%d%%" % commandArgs.tts_volume)
 
 # etsted for USB audio device
-os.system("amixer -c %d cset numid=3 %d%%" % (commandArgs.speaker_devie, commandArgs.tts_volume))
+#os.system("amixer -c %d cset numid=3 %d%%" % (commandArgs.speaker_devie, commandArgs.tts_volume))
 
 infoServer = 'letsrobot.tv'
 
