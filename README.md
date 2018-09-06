@@ -73,7 +73,7 @@ The following hardware is required to make an accurate clone of LED bot.
 
 ![bb](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/Arduino_LED_Bot_bb.png)
 ![schem](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/Arduino_LED_Bot_schem.png)
-![topo](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/LED_Bot_topology)
+![topo](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/LED_Bot_topology.png)
 
 ## Monitoring Serial communications while the bot runs
 You can monitor the serial data with `minicom`. 
