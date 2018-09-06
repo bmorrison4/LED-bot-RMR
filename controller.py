@@ -140,7 +140,7 @@ def onHandleChatMessageRemoved(*args):
     if args[0]['message_id'] in processing and args[0] not in deleted:
         deleted.append(args[0]['message_id'])
 
-def onHandleAppServerConnect(*args)
+def onHandleAppServerConnect(*args):
     print
     print "chat socket.io connect"
     print
