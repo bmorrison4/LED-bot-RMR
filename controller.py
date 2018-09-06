@@ -152,7 +152,7 @@ def onHandleAppServerReconnect(*args):
     print
     identifyRobotID()
 
-def onHandleAppServerDisconnect(*args)
+def onHandleAppServerDisconnect(*args):
     print
     print "app server socket.io disconnect"
     print
