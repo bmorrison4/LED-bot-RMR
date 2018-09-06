@@ -10,7 +10,7 @@ import getpass
 import sys
 import argparse
 import random
-import telly
+#import telly
 import robot_util
 import serial
 import time
