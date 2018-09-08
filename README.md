@@ -59,6 +59,8 @@ Insert the following line and save:
 ```
 @reboot /bin/bash /home/pi/start_robot
 ```
+On any machine with an Arduino IDE (available at [arduino.cc](arduino.cc)), Install `arduino_code.ino` onto the Arduino.
+
 That's it!
 
 ## Hardware Configuration
