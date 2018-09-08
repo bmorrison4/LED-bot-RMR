@@ -73,6 +73,8 @@ The following hardware is required to make an accurate clone of LED bot.
 - Hookup wire
 - USB for powering Arduino and sending serial data.
 
+1. Connect the arduino to the raspberry pi using a USB cable.
+
 ![bb](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/Arduino_LED_Bot_bb.png)
 ![schem](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/Arduino_LED_Bot_schem.png)
 ![topo](https://raw.githubusercontent.com/skeetermcbee/runmyrobot/master/images/LED_Bot_topology.png)
