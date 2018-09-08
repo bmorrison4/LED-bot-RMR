@@ -19,7 +19,7 @@ sudo apt update
 ```
 Install `ffmpeg` and other software needed to run our code.
 ```
-sudo apt install ffmpeg python-serial python-dev libgnutls28-dev espeak python-smbus python-pip git
+sudo apt install ffmpeg python-serial python-dev libgnutls28-dev espeak python-smbus python-pip git sl
 ```
 Download the Let's Robot / Run My Robot software from this fork.
 ```
