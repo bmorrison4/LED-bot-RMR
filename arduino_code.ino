@@ -25,7 +25,7 @@ const int bluePin = 6;
 //String green = "green: ";
 //String blue = "blue: ";
 
-boolean debug = true;
+boolean debug = false;
 
 int redVal = 0;
 int greenVal = 0;
@@ -44,8 +44,10 @@ void setup() {
 void loop() {
   if (Serial.available()) {
     char input = Serial.read();
-    Serial.print("found command: ");
-    Serial.println(input);
+    if (debug) {
+      Serial.print("found command: ");
+      Serial.println(input);
+    }
     switch (input) {
       case 'y':
         redVal += brightnessStep;
@@ -87,6 +89,9 @@ void loop() {
       case 'x':
         digitalWrite(13, LOW);
         break;
+      case 'd':
+        debug = !debug;
+        break;
       default:
         break;
     }
@@ -98,106 +103,6 @@ void loop() {
       Serial.print('\t');
       Serial.println(blueVal);
     }
-/*    
-    char chars[2];
-    chars = Serial.readBytes(chars, 2);
-    Serial.print("Found command: ");
-    Serial.println(chars);
-
-    switch(chars[0]) {
-      case 'r':
-        case 'u':
-          redVal += brighnessStep;
-          break;
-        case 'd':
-          redVal -= brightnessStep;
-          break;
-      case 'g':
-        case 'u':
-          greenVal += brightnessStep;
-          break;
-        case 'd':
-          greenVal -= brighnessStep;
-          break;
-      case 'b':
-        case 'u':
-          blueVal += brightnessStep;
-          break;
-        case 'd':
-          blueVal -= brightnessStep;
-          break;
-      case 'a':
-        case 'o':
-          redVal = 255;
-          blueVal = 255;
-          greenVal = 255;
-          break;
-        case 'f':
-          redVal = 0;
-          blueVal = 0;
-          greenVal = 0;
-          break;
-      case 't':
-        case 'o':
-          digitalWrite(13, HIGH);
-          break;
-        case 'f':
-          digitalWrite(13, LOW);
-          break;
-    }
-*/
-/*
- * 
-    if (firstChar == "r") {
-      if (secondChar == "u") {
-        redVal += brightnessStep;
-        if (redVal > 255) redVal = 255;
-      } else if (secondChar == "d") {
-        redVal -= brightnessStep;
-        if (redVal < 0) redVal = 0;
-      }
-      Serial.print("Moving value of red to: ");
-      Serial.println(redVal);
-    } else if (firstChar == "g") {
-      if (secondChar == "u") {
-        greenVal += brightnessStep;
-        if (greenVal > 255) greenVal = 255;
-      } else if (secondChar == "d") {
-        greenVal -= brightnessStep;
-        if (greenVal < 0) greenVal = 0;
-      }
-      Serial.print("Moving value of green to: ");
-      Serial.println(greenVal);
-    } else if (firstChar == "b") {
-      if (secondChar == "u") {
-        blueVal += brightnessStep;
-        if (blueVal > 255) blueVal = 255;
-      } else if (secondChar == "d") {
-        blueVal -= brightnessStep;
-        if (blueVal < 0) blueVal = 0;
-      }
-      Serial.print("Moving value of blue to: ");
-      Serial.println(blueVal);
-    } else if (firstChar == "a") {
-      if (secondChar == "o") {
-        redVal = 255;
-        blueVal = 255;
-        greenVal = 255;
-        Serial.println("Wrote HIGH to all.");
-      } else if (secondChar == "f") {
-        redVal = 0;
-        blueVal = 0;
-        greenVal = 0;
-        Serial.println("Wrote LOW to all.");
-      }
-    } else if (firstChar == "t") {
-      if (secondChar == "o") {
-        digitalWrite(13, HIGH);
-      } else if (secondChar == "f") {
-        digitalWrite(13, LOW);
-      }
-    }
-*/
  
     analogWrite(redPin, redVal);
     analogWrite(greenPin, greenVal);
