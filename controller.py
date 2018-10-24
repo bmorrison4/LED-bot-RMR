@@ -14,6 +14,7 @@ import random
 import telly
 import robot_util
 import requests
+import glob
 
 parser = argparse.ArgumentParser(description='start robot control program')
 parser.add_argument('robot_id', help='Robot ID')
@@ -103,69 +104,69 @@ print "temporary directory:", tempDir
 
 
 # motor controller specific intializations
-#if commandArgs.type == 'none':
-#    pass
-if commandArgs.type == 'serial':
+if commandArgs.type == 'none':
+    pass
+elif commandArgs.type == 'serial':
     import serial
-#elif commandArgs.type == 'motor_hat':
-#    pass
-#elif commandArgs.type == 'gopigo2':
-#    import gopigo
-#elif commandArgs.type == 'gopigo3':
-#    sys.path.append("/home/pi/Dexter/GoPiGo3/Software/Python")
-#    import easygopigo3
-#    easyGoPiGo3 = easygopigo3.EasyGoPiGo3()
-#elif commandArgs.type == 'l298n':
-#    try:
-#        import configparser
-#    except ImportError:
-#        print "You need to install configparser (sudo python -m pip install configparser)\n Ctrl-C to quit"
-#        while True:
-#            pass # Halt program	to avoid error down the line.
-#elif commandArgs.type == 'motozero':
-#    pass
-#elif commandArgs.type == 'pololu':
-#    pass
-#elif commandArgs.type == 'screencap':
-#    pass
-#elif commandArgs.type == 'adafruit_pwm':
-#    from Adafruit_PWM_Servo_Driver import PWM
-#elif commandArgs.led == 'max7219':
-#    import spidev
-#elif commandArgs.type == 'owi_arm':
-#    import owi_arm
-#elif commandArgs.type == 'mdd10':
-#    pass
+elif commandArgs.type == 'motor_hat':
+    pass
+elif commandArgs.type == 'gopigo2':
+    import gopigo
+elif commandArgs.type == 'gopigo3':
+    sys.path.append("/home/pi/Dexter/GoPiGo3/Software/Python")
+    import easygopigo3
+    easyGoPiGo3 = easygopigo3.EasyGoPiGo3()
+elif commandArgs.type == 'l298n':
+    try:
+        import configparser
+    except ImportError:
+        print "You need to install configparser (sudo python -m pip install configparser)\n Ctrl-C to quit"
+        while True:
+            pass # Halt program	to avoid error down the line.
+elif commandArgs.type == 'motozero':
+    pass
+elif commandArgs.type == 'pololu':
+    pass
+elif commandArgs.type == 'screencap':
+    pass
+elif commandArgs.type == 'adafruit_pwm':
+    from Adafruit_PWM_Servo_Driver import PWM
+elif commandArgs.led == 'max7219':
+    import spidev
+elif commandArgs.type == 'owi_arm':
+    import owi_arm
+elif commandArgs.type == 'mdd10':
+    pass
 else:
     print "invalid --type in command line"
     exit(0)
 
 serialDevice = commandArgs.serial_device
 
-#if commandArgs.type == 'motor_hat':
-#    try:
-#        from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
-#        motorsEnabled = True
-#    except ImportError:
-#        print "You need to install Adafruit_MotorHAT"
-#        print "Please install Adafruit_MotorHAT for python and restart this script."
-#        print "To install: cd /usr/local/src && sudo git clone https://github.com/adafruit/Adafruit-Motor-HAT-Python-Library.git"
-#        print "cd /usr/local/src/Adafruit-Motor-HAT-Python-Library && sudo python setup.py install"
-#        print "Running in test mode."
-#        print "Ctrl-C to quit"
-#        motorsEnabled = False
-#
-## todo: specificity is not correct, this is specific to a bot with a claw, not all motor_hat based bots
-#if commandArgs.type == 'motor_hat':
-#    from Adafruit_PWM_Servo_Driver import PWM
+if commandArgs.type == 'motor_hat':
+    try:
+        from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
+        motorsEnabled = True
+    except ImportError:
+        print "You need to install Adafruit_MotorHAT"
+        print "Please install Adafruit_MotorHAT for python and restart this script."
+        print "To install: cd /usr/local/src && sudo git clone https://github.com/adafruit/Adafruit-Motor-HAT-Python-Library.git"
+        print "cd /usr/local/src/Adafruit-Motor-HAT-Python-Library && sudo python setup.py install"
+        print "Running in test mode."
+        print "Ctrl-C to quit"
+        motorsEnabled = False
+
+# todo: specificity is not correct, this is specific to a bot with a claw, not all motor_hat based bots
+if commandArgs.type == 'motor_hat':
+    from Adafruit_PWM_Servo_Driver import PWM
 
 import time
 import atexit
 import sys
 import thread
 import subprocess
-#if (commandArgs.type == 'motor_hat') or (commandArgs.type == 'l298n') or (commandArgs.type == 'motozero'):
-#    import RPi.GPIO as GPIO
+if (commandArgs.type == 'motor_hat') or (commandArgs.type == 'l298n') or (commandArgs.type == 'motozero'):
+    import RPi.GPIO as GPIO
 import datetime
 from socketIO_client import SocketIO, LoggingNamespace
 
@@ -178,215 +179,215 @@ response = requests.request("GET", url)
 json_data = json.loads(response.text)
 print("owner:",json_data['owner'])
       
-#if commandArgs.type == 'motor_hat':
-#    GPIO.setmode(GPIO.BCM)
-#    GPIO.setup(chargeIONumber, GPIO.IN)
-#if commandArgs.type == 'l298n':
-#    mode=GPIO.getmode()
-#    print " mode ="+str(mode)
-#    GPIO.cleanup()
-#    #Change the GPIO Pins to your connected motors in gpio.conf
-#    #visit http://bit.ly/1S5nQ4y for reference
-#    gpio_config = configparser.ConfigParser()
-#    gpio_config.read('gpio.conf')
-#    if str(robotID) in gpio_config.sections():
-#        config_id = str(robotID)
-#    else:
-#        config_id = 'default'		
-#    StepPinForward = int(str(gpio_config[config_id]['StepPinForward']).split(',')[0]),int(str(gpio_config[config_id]['StepPinForward']).split(',')[1])
-#    StepPinBackward = int(str(gpio_config[config_id]['StepPinBackward']).split(',')[0]),int(str(gpio_config[config_id]['StepPinBackward']).split(',')[1])
-#    StepPinLeft = int(str(gpio_config[config_id]['StepPinLeft']).split(',')[0]),int(str(gpio_config[config_id]['StepPinLeft']).split(',')[1])
-#    StepPinRight = int(str(gpio_config[config_id]['StepPinRight']).split(',')[0]),int(str(gpio_config[config_id]['StepPinRight']).split(',')[1])
-#	
-#    GPIO.setmode(GPIO.BOARD)
-#    GPIO.setup(StepPinForward, GPIO.OUT)
-#    GPIO.setup(StepPinBackward, GPIO.OUT)
-#    GPIO.setup(StepPinLeft, GPIO.OUT)
-#    GPIO.setup(StepPinRight, GPIO.OUT)
-##Test if user
-#if commandArgs.type == "pololu":
-#    try:
-#	from pololu_drv8835_rpi import motors, MAX_SPEED
-#    except ImportError:
-#	print "You need to install drv8835-motor-driver-rpi"
-#        print "Please install drv8835-motor-driver-rpi for python and restart this script."
-#        print "To install: cd /usr/local/src && sudo git clone https://github.com/pololu/drv8835-motor-driver-rpi"
-#        print "cd /usr/local/src/drv8835-motor-driver-rpi && sudo python setup.py install"
-#        print "Running in test mode."
-#        print "Ctrl-C to quit"
-#   
-#if commandArgs.type == 'motozero':
-#    GPIO.cleanup()
-#    GPIO.setmode(GPIO.BCM)
-#
-#    # Motor1 is back left
-#    # Motor1A is reverse
-#    # Motor1B is forward
-#    Motor1A = 24
-#    Motor1B = 27
-#    Motor1Enable = 5
-#
-#    # Motor2 is back right
-#    # Motor2A is reverse
-#    # Motor2B is forward
-#    Motor2A = 6
-#    Motor2B = 22
-#    Motor2Enable = 17
-#
-#    # Motor3 is ?
-#    # Motor3A is reverse
-#    # Motor3B is forward
-#    Motor3A = 23
-#    Motor3B = 16
-#    Motor3Enable = 12
-#
-#    # Motor4 is ?
-#    # Motor4A is reverse
-#    # Motor4B is forward
-#    Motor4A = 13
-#    Motor4B = 18
-#    Motor4Enable = 25
-#
-#    GPIO.setup(Motor1A,GPIO.OUT)
-#    GPIO.setup(Motor1B,GPIO.OUT)
-#    GPIO.setup(Motor1Enable,GPIO.OUT)
-#
-#    GPIO.setup(Motor2A,GPIO.OUT)
-#    GPIO.setup(Motor2B,GPIO.OUT)
-#    GPIO.setup(Motor2Enable,GPIO.OUT) 
-#
-#    GPIO.setup(Motor3A,GPIO.OUT)
-#    GPIO.setup(Motor3B,GPIO.OUT)
-#    GPIO.setup(Motor3Enable,GPIO.OUT)
-#
-#    GPIO.setup(Motor4A,GPIO.OUT)
-#    GPIO.setup(Motor4B,GPIO.OUT)
-#    GPIO.setup(Motor4Enable,GPIO.OUT)
-##Cytron MDD10 GPIO setup
-#if commandArgs.type == 'mdd10' :
-## pwm.setPWMFreq(60)
-#  import RPi.GPIO as GPIO
-#  GPIO.setmode(GPIO.BCM)
-#  GPIO.setwarnings(False)
-#  AN2 = 13
-#  AN1 = 12
-#  DIG2 = 24
-#  DIG1 = 26
-#  GPIO.setup(AN2, GPIO.OUT)
-#  GPIO.setup(AN1, GPIO.OUT)
-#  GPIO.setup(DIG2, GPIO.OUT)
-#  GPIO.setup(DIG1, GPIO.OUT)
-#  time.sleep(1)
-#  p1 = GPIO.PWM(AN1, 100)
-#  p2 = GPIO.PWM(AN2, 100)
-#  
-##LED controlling
-#if commandArgs.led == 'max7219':
-#    spi = spidev.SpiDev()
-#    spi.open(0,0)
-#    #VCC -> RPi Pin 2
-#    #GND -> RPi Pin 6
-#    #DIN -> RPi Pin 19
-#    #CLK -> RPi Pin 23
-#    #CS -> RPi Pin 24
-#    
-#    # decoding:BCD
-#    spi.writebytes([0x09])
-#    spi.writebytes([0x00])
-#    # Start with low brightness
-#    spi.writebytes([0x0a])
-#    spi.writebytes([0x03])
-#    # scanlimit; 8 LEDs
-#    spi.writebytes([0x0b])
-#    spi.writebytes([0x07])
-#    # Enter normal power-mode
-#    spi.writebytes([0x0c])
-#    spi.writebytes([0x01])
-#    # Activate display
-#    spi.writebytes([0x0f])
-#    spi.writebytes([0x00])
-#    columns = [0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8]
-#    LEDOn = [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF] 
-#    LEDOff = [0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0]
-#    LEDEmoteSmile = [0x0,0x0,0x24,0x0,0x42,0x3C,0x0,0x0]
-#    LEDEmoteSad = [0x0,0x0,0x24,0x0,0x0,0x3C,0x42,0x0]
-#    LEDEmoteTongue = [0x0,0x0,0x24,0x0,0x42,0x3C,0xC,0x0]
-#    LEDEmoteSuprise = [0x0,0x0,0x24,0x0,0x18,0x24,0x24,0x18]
-#    if commandArgs.ledrotate == '180':
-#        LEDEmoteSmile = LEDEmoteSmile[::-1]
-#        LEDEmoteSad = LEDEmoteSad[::-1]
-#        LEDEmoteTongue = LEDEmoteTongue[::-1]
-#        LEDEmoteSuprise = LEDEmoteSuprise[::-1]
-#    
-#def SetLED_On():
-#  if commandArgs.led == 'max7219':
-#    for i in range(len(columns)):
-#        spi.xfer([columns[i],LEDOn[i]])
-#def SetLED_Off():
-#  if commandArgs.led == 'max7219': 
-#    for i in range(len(columns)):
-#        spi.xfer([columns[i],LEDOff[i]])
-#def SetLED_E_Smiley():
-#  if commandArgs.led == 'max7219':
-#    for i in range(len(columns)):
-#        spi.xfer([columns[i],LEDEmoteSmile[i]]) 
-#def SetLED_E_Sad():
-#  if commandArgs.led == 'max7219':
-#    for i in range(len(columns)):
-#        spi.xfer([columns[i],LEDEmoteSad[i]])
-#def SetLED_E_Tongue():
-#  if commandArgs.led == 'max7219':
-#    for i in range(len(columns)):
-#        spi.xfer([columns[i],LEDEmoteTongue[i]])
-#def SetLED_E_Suprised():
-#  if commandArgs.led == 'max7219':
-#    for i in range(len(columns)):
-#        spi.xfer([columns[i],LEDEmoteSuprise[i]])
-#def SetLED_Low():
-#  if commandArgs.led == 'max7219':
-#    # brightness MIN
-#    spi.writebytes([0x0a])
-#    spi.writebytes([0x00])
-#def SetLED_Med():
-#  if commandArgs.led == 'max7219':
-#    #brightness MED
-#    spi.writebytes([0x0a])
-#    spi.writebytes([0x06])
-#def SetLED_Full():
-#  if commandArgs.led == 'max7219':
-#    # brightness MAX
-#    spi.writebytes([0x0a])
-#    spi.writebytes([0x0F])
-#        
-#SetLED_Off()
-#
-#steeringSpeed = 90
-#steeringHoldingSpeed = 90
+if commandArgs.type == 'motor_hat':
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(chargeIONumber, GPIO.IN)
+if commandArgs.type == 'l298n':
+    mode=GPIO.getmode()
+    print " mode ="+str(mode)
+    GPIO.cleanup()
+    #Change the GPIO Pins to your connected motors in gpio.conf
+    #visit http://bit.ly/1S5nQ4y for reference
+    gpio_config = configparser.ConfigParser()
+    gpio_config.read('gpio.conf')
+    if str(robotID) in gpio_config.sections():
+        config_id = str(robotID)
+    else:
+        config_id = 'default'		
+    StepPinForward = int(str(gpio_config[config_id]['StepPinForward']).split(',')[0]),int(str(gpio_config[config_id]['StepPinForward']).split(',')[1])
+    StepPinBackward = int(str(gpio_config[config_id]['StepPinBackward']).split(',')[0]),int(str(gpio_config[config_id]['StepPinBackward']).split(',')[1])
+    StepPinLeft = int(str(gpio_config[config_id]['StepPinLeft']).split(',')[0]),int(str(gpio_config[config_id]['StepPinLeft']).split(',')[1])
+    StepPinRight = int(str(gpio_config[config_id]['StepPinRight']).split(',')[0]),int(str(gpio_config[config_id]['StepPinRight']).split(',')[1])
+	
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(StepPinForward, GPIO.OUT)
+    GPIO.setup(StepPinBackward, GPIO.OUT)
+    GPIO.setup(StepPinLeft, GPIO.OUT)
+    GPIO.setup(StepPinRight, GPIO.OUT)
+#Test if user
+if commandArgs.type == "pololu":
+    try:
+	from pololu_drv8835_rpi import motors, MAX_SPEED
+    except ImportError:
+	print "You need to install drv8835-motor-driver-rpi"
+        print "Please install drv8835-motor-driver-rpi for python and restart this script."
+        print "To install: cd /usr/local/src && sudo git clone https://github.com/pololu/drv8835-motor-driver-rpi"
+        print "cd /usr/local/src/drv8835-motor-driver-rpi && sudo python setup.py install"
+        print "Running in test mode."
+        print "Ctrl-C to quit"
+   
+if commandArgs.type == 'motozero':
+    GPIO.cleanup()
+    GPIO.setmode(GPIO.BCM)
+
+    # Motor1 is back left
+    # Motor1A is reverse
+    # Motor1B is forward
+    Motor1A = 24
+    Motor1B = 27
+    Motor1Enable = 5
+
+    # Motor2 is back right
+    # Motor2A is reverse
+    # Motor2B is forward
+    Motor2A = 6
+    Motor2B = 22
+    Motor2Enable = 17
+
+    # Motor3 is ?
+    # Motor3A is reverse
+    # Motor3B is forward
+    Motor3A = 23
+    Motor3B = 16
+    Motor3Enable = 12
+
+    # Motor4 is ?
+    # Motor4A is reverse
+    # Motor4B is forward
+    Motor4A = 13
+    Motor4B = 18
+    Motor4Enable = 25
+
+    GPIO.setup(Motor1A,GPIO.OUT)
+    GPIO.setup(Motor1B,GPIO.OUT)
+    GPIO.setup(Motor1Enable,GPIO.OUT)
+
+    GPIO.setup(Motor2A,GPIO.OUT)
+    GPIO.setup(Motor2B,GPIO.OUT)
+    GPIO.setup(Motor2Enable,GPIO.OUT) 
+
+    GPIO.setup(Motor3A,GPIO.OUT)
+    GPIO.setup(Motor3B,GPIO.OUT)
+    GPIO.setup(Motor3Enable,GPIO.OUT)
+
+    GPIO.setup(Motor4A,GPIO.OUT)
+    GPIO.setup(Motor4B,GPIO.OUT)
+    GPIO.setup(Motor4Enable,GPIO.OUT)
+#Cytron MDD10 GPIO setup
+if commandArgs.type == 'mdd10' :
+# pwm.setPWMFreq(60)
+  import RPi.GPIO as GPIO
+  GPIO.setmode(GPIO.BCM)
+  GPIO.setwarnings(False)
+  AN2 = 13
+  AN1 = 12
+  DIG2 = 24
+  DIG1 = 26
+  GPIO.setup(AN2, GPIO.OUT)
+  GPIO.setup(AN1, GPIO.OUT)
+  GPIO.setup(DIG2, GPIO.OUT)
+  GPIO.setup(DIG1, GPIO.OUT)
+  time.sleep(1)
+  p1 = GPIO.PWM(AN1, 100)
+  p2 = GPIO.PWM(AN2, 100)
+  
+#LED controlling
+if commandArgs.led == 'max7219':
+    spi = spidev.SpiDev()
+    spi.open(0,0)
+    #VCC -> RPi Pin 2
+    #GND -> RPi Pin 6
+    #DIN -> RPi Pin 19
+    #CLK -> RPi Pin 23
+    #CS -> RPi Pin 24
+    
+    # decoding:BCD
+    spi.writebytes([0x09])
+    spi.writebytes([0x00])
+    # Start with low brightness
+    spi.writebytes([0x0a])
+    spi.writebytes([0x03])
+    # scanlimit; 8 LEDs
+    spi.writebytes([0x0b])
+    spi.writebytes([0x07])
+    # Enter normal power-mode
+    spi.writebytes([0x0c])
+    spi.writebytes([0x01])
+    # Activate display
+    spi.writebytes([0x0f])
+    spi.writebytes([0x00])
+    columns = [0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8]
+    LEDOn = [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF] 
+    LEDOff = [0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0]
+    LEDEmoteSmile = [0x0,0x0,0x24,0x0,0x42,0x3C,0x0,0x0]
+    LEDEmoteSad = [0x0,0x0,0x24,0x0,0x0,0x3C,0x42,0x0]
+    LEDEmoteTongue = [0x0,0x0,0x24,0x0,0x42,0x3C,0xC,0x0]
+    LEDEmoteSuprise = [0x0,0x0,0x24,0x0,0x18,0x24,0x24,0x18]
+    if commandArgs.ledrotate == '180':
+        LEDEmoteSmile = LEDEmoteSmile[::-1]
+        LEDEmoteSad = LEDEmoteSad[::-1]
+        LEDEmoteTongue = LEDEmoteTongue[::-1]
+        LEDEmoteSuprise = LEDEmoteSuprise[::-1]
+    
+def SetLED_On():
+  if commandArgs.led == 'max7219':
+    for i in range(len(columns)):
+        spi.xfer([columns[i],LEDOn[i]])
+def SetLED_Off():
+  if commandArgs.led == 'max7219': 
+    for i in range(len(columns)):
+        spi.xfer([columns[i],LEDOff[i]])
+def SetLED_E_Smiley():
+  if commandArgs.led == 'max7219':
+    for i in range(len(columns)):
+        spi.xfer([columns[i],LEDEmoteSmile[i]]) 
+def SetLED_E_Sad():
+  if commandArgs.led == 'max7219':
+    for i in range(len(columns)):
+        spi.xfer([columns[i],LEDEmoteSad[i]])
+def SetLED_E_Tongue():
+  if commandArgs.led == 'max7219':
+    for i in range(len(columns)):
+        spi.xfer([columns[i],LEDEmoteTongue[i]])
+def SetLED_E_Suprised():
+  if commandArgs.led == 'max7219':
+    for i in range(len(columns)):
+        spi.xfer([columns[i],LEDEmoteSuprise[i]])
+def SetLED_Low():
+  if commandArgs.led == 'max7219':
+    # brightness MIN
+    spi.writebytes([0x0a])
+    spi.writebytes([0x00])
+def SetLED_Med():
+  if commandArgs.led == 'max7219':
+    #brightness MED
+    spi.writebytes([0x0a])
+    spi.writebytes([0x06])
+def SetLED_Full():
+  if commandArgs.led == 'max7219':
+    # brightness MAX
+    spi.writebytes([0x0a])
+    spi.writebytes([0x0F])
+        
+SetLED_Off()
+
+steeringSpeed = 90
+steeringHoldingSpeed = 90
 
 global drivingSpeed
 
 tablemode = 0
 #drivingSpeed = 90
-#drivingSpeed = commandArgs.driving_speed
+drivingSpeed = commandArgs.driving_speed
 handlingCommand = False
 
 
 # Marvin
-#turningSpeedActuallyUsed = 250
-#dayTimeDrivingSpeedActuallyUsed = commandArgs.day_speed
-#nightTimeDrivingSpeedActuallyUsed = commandArgs.night_speed
+turningSpeedActuallyUsed = 250
+dayTimeDrivingSpeedActuallyUsed = commandArgs.day_speed
+nightTimeDrivingSpeedActuallyUsed = commandArgs.night_speed
 
 # Initialise the PWM device
-#if commandArgs.type == 'motor_hat':
-#    pwm = PWM(0x42)
-#elif commandArgs.type == 'adafruit_pwm':
-#    pwm = PWM(0x40) 
+if commandArgs.type == 'motor_hat':
+    pwm = PWM(0x42)
+elif commandArgs.type == 'adafruit_pwm':
+    pwm = PWM(0x40) 
 
 # Note if you'd like more debug output you can instead run:
 #pwm = PWM(0x40, debug=True)
-#servoMin = [150, 150, 130]  # Min pulse length out of 4096
-#servoMax = [600, 600, 270]  # Max pulse length out of 4096
-#armServo = [300, 300, 300]
+servoMin = [150, 150, 130]  # Min pulse length out of 4096
+servoMax = [600, 600, 270]  # Max pulse length out of 4096
+armServo = [300, 300, 300]
 
 #def setMotorsToIdle():
 #    s = 65
@@ -407,45 +408,76 @@ handlingCommand = False
 #    print "invalid environment"
 #    sys.exit(0)
 
+def serial_ports():
+    """ Lists serial port names
+
+        :raises EnvironmentError:
+            On unsupported or unknown platforms
+        :returns:
+            A list of the serial ports available on the system
+    """
+    if sys.platform.startswith('win'):
+        ports = ['COM%s' % (i + 1) for i in range(256)]
+    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+        # this excludes your current terminal "/dev/tty"
+        ports = glob.glob('/dev/tty[A-Za-z]*')
+    elif sys.platform.startswith('darwin'):
+        ports = glob.glob('/dev/tty.*')
+    else:
+        raise EnvironmentError('Unsupported platform')
+
+    result = []
+    for port in ports:
+        try:
+            s = serial.Serial(port)
+            s.close()
+            result.append(port)
+        except:
+            pass
+    return result
+
+ser = None
+lastPorts = []
+firstPortScan = True
+
+def setup_serial():
+    global ser
+    global lastPorts
+    global firstPortScan
+    ports = serial_ports()
+    if firstPortScan == False and lastPorts == ports:
+        return
+    firstPortScan = False
+    lastPorts = ports
+    if len(ports) == 0:
+        print "error: could not find any valid serial port"
+        return
+    port = ports[0]
+    if serialDevice in ports:
+        port = serialDevice
+
+    print ports
+    print port
+    serialBaud = 9600
+    if ser is not None:
+        try:
+            ser.close()
+        except:
+            print "closing serial failed continuing"
+    ser = serial.Serial(port, serialBaud, timeout=1, write_timeout=1)
 
 if commandArgs.type == 'serial':
-    # initialize serial connection
-    serialBaud = 9600
-    print "baud:", serialBaud
-    #ser = serial.Serial('/dev/tty.usbmodem12341', 19200, timeout=1)  # open serial
-    ser = None
-    try:
-        ser = serial.Serial(serialDevice, serialBaud, timeout=1)  # open serial
-    except:
-        print "error: could not open serial port"
+    setup_serial()
+
+    if ser is not None:
         try:
-            ser = serial.Serial('/dev/ttyACM0', serialBaud, timeout=1)  # open serial
-        except:
-            print "error: could not open serial port /dev/ttyACM0"
-            try:
-                ser = serial.Serial('/dev/ttyUSB0', serialBaud, timeout=1)  # open serial
-            except:
-                print "error: could not open serial port /dev/ttyUSB0"
-                try:
-                    ser = serial.Serial('/dev/ttyUSB1', serialBaud, timeout=1)  # open serial
-                except:
-                    print "error: could not open serial port /dev/ttyUSB1"
-                    try:
-                        ser = serial.Serial('/dev/ttyUSB2', serialBaud, timeout=1)  # open serial
-                    except:
-                        print "error: could not open serial port /dev/ttyUSB2"
-
-    if ser is None:
-        print "error: could not find any valid serial port"
-    else:
-        telly.sendSettings(ser, commandArgs)
-
-
-
+            telly.sendSettings(ser, commandArgs)
+        except Exception as exception:
+            print exception
 
 def getControlHostPort():
 
-    url = 'https://%s/get_control_host_port/%s' % (infoServer, commandArgs.robot_id)
+    url = 'https://%s/get_control_host_port/%s?version=2' % (infoServer, commandArgs.robot_id)
     response = robot_util.getWithRetry(url, secure=commandArgs.secure_cert)
     return json.loads(response)
 
@@ -460,36 +492,36 @@ chatHostPort = getChatHostPort()
 
 
 print "connecting to control socket.io", controlHostPort
-controlSocketIO = SocketIO(controlHostPort['host'], controlHostPort['port'], LoggingNamespace)
+controlSocketIO = SocketIO(controlHostPort['host'], controlHostPort['port'], LoggingNamespace, transports='websocket')
 print "finished using socket io to connect to control host port", controlHostPort
 
 if commandArgs.enable_chat_server_connection:
     print "connecting to chat socket.io", chatHostPort
-    chatSocket = SocketIO(chatHostPort['host'], chatHostPort['port'], LoggingNamespace)
+    chatSocket = SocketIO(chatHostPort['host'], chatHostPort['port'], LoggingNamespace, transports='websocket')
     print 'finished using socket io to connect to chat ', chatHostPort
 else:
     print "chat server connection disabled"
 
 if commandArgs.tts_delay_enabled or commandArgs.woot_room != '':
-    userSocket = SocketIO('https://letsrobot.tv', 8000, LoggingNamespace)
+    userSocket = SocketIO('https://letsrobot.tv', 8000, LoggingNamespace, transports='websocket')
 
 print "connecting to app server socket.io"
-appServerSocketIO = SocketIO(infoServer, 8022, LoggingNamespace)
+appServerSocketIO = SocketIO(infoServer, 8022, LoggingNamespace, transports='websocket')
 print "finished connecting to app server"
 
-#def setServoPulse(channel, pulse):
-#  pulseLength = 1000000                   # 1,000,000 us per second
-#  pulseLength /= 60                       # 60 Hz
-#  print "%d us per period" % pulseLength
-#  pulseLength /= 4096                     # 12 bits of resolution
-#  print "%d us per bit" % pulseLength
-#  pulse *= 1000
-#  pulse /= pulseLength
-#  pwm.setPWM(channel, 0, pulse)
+def setServoPulse(channel, pulse):
+  pulseLength = 1000000                   # 1,000,000 us per second
+  pulseLength /= 60                       # 60 Hz
+  print "%d us per period" % pulseLength
+  pulseLength /= 4096                     # 12 bits of resolution
+  print "%d us per bit" % pulseLength
+  pulse *= 1000
+  pulse /= pulseLength
+  pwm.setPWM(channel, 0, pulse)
 
 
-#if commandArgs.type == 'motor_hat' or commandArgs.type == 'adafruit_pwm':
-#    pwm.setPWMFreq(60)                        # Set frequency to 60 Hz
+if commandArgs.type == 'motor_hat' or commandArgs.type == 'adafruit_pwm':
+    pwm.setPWMFreq(60)                        # Set frequency to 60 Hz
 
 
 WPA_FILE_TEMPLATE = """ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -562,17 +594,17 @@ def configWifiLogin(secretKey):
 
 
 
-#def incrementArmServo(channel, amount):
-#
-#    armServo[channel] += amount
-#
-#    print "arm servo positions:", armServo
-#
-#    if armServo[channel] > servoMax[channel]:
-#        armServo[channel] = servoMax[channel]
-#    if armServo[channel] < servoMin[channel]:
-#        armServo[channel] = servoMin[channel]
-#    pwm.setPWM(channel, 0, armServo[channel])
+def incrementArmServo(channel, amount):
+
+    armServo[channel] += amount
+
+    print "arm servo positions:", armServo
+
+    if armServo[channel] > servoMax[channel]:
+        armServo[channel] = servoMax[channel]
+    if armServo[channel] < servoMin[channel]:
+        armServo[channel] = servoMin[channel]
+    pwm.setPWM(channel, 0, armServo[channel])
 
         
 
@@ -581,32 +613,32 @@ def times(lst, number):
 
 
 
-#def runMotor(motorIndex, direction):
-#    motor = mh.getMotor(motorIndex+1)
-#    if direction == 1:
-#        motor.setSpeed(drivingSpeed)
-#        motor.run(Adafruit_MotorHAT.FORWARD)
-#    if direction == -1:
-#        motor.setSpeed(drivingSpeed)
-#        motor.run(Adafruit_MotorHAT.BACKWARD)
-#    if direction == 0.5:
-#        motor.setSpeed(128)
-#        motor.run(Adafruit_MotorHAT.FORWARD)
-#    if direction == -0.5:
-#        motor.setSpeed(128)
-#        motor.run(Adafruit_MotorHAT.BACKWARD)
+def runMotor(motorIndex, direction):
+    motor = mh.getMotor(motorIndex+1)
+    if direction == 1:
+        motor.setSpeed(drivingSpeed)
+        motor.run(Adafruit_MotorHAT.FORWARD)
+    if direction == -1:
+        motor.setSpeed(drivingSpeed)
+        motor.run(Adafruit_MotorHAT.BACKWARD)
+    if direction == 0.5:
+        motor.setSpeed(128)
+        motor.run(Adafruit_MotorHAT.FORWARD)
+    if direction == -0.5:
+        motor.setSpeed(128)
+        motor.run(Adafruit_MotorHAT.BACKWARD)
 
 
-#forward = json.loads(commandArgs.forward)
-#backward = times(forward, -1)
-#left = json.loads(commandArgs.left)
-#right = times(left, -1)
-#straightDelay = commandArgs.straight_delay 
-#turnDelay = commandArgs.turn_delay
-##Change sleeptime to adjust driving speed
-##Change rotatetimes to adjust the rotation. Will be multiplicated with sleeptime.
-#l298n_sleeptime=0.2
-#l298n_rotatetimes=5
+forward = json.loads(commandArgs.forward)
+backward = times(forward, -1)
+left = json.loads(commandArgs.left)
+right = times(left, -1)
+straightDelay = commandArgs.straight_delay 
+turnDelay = commandArgs.turn_delay
+#Change sleeptime to adjust driving speed
+#Change rotatetimes to adjust the rotation. Will be multiplicated with sleeptime.
+l298n_sleeptime=0.2
+l298n_rotatetimes=5
 
     
 def handle_exclusive_control(args):
@@ -685,11 +717,11 @@ def handle_chat_message(args):
           elif message == ' .table off':
              tablemode = 0
              say("table top mode is now off")
-       elif message[1] == ".":
+       if message[1] == ".":
           exit()
        else:
           say(message)
-    if message[1] == ".":
+    elif message[1] == ".":
        exit()
     elif commandArgs.anon_tts != True and args['anonymous'] == True:
        exit()
@@ -698,112 +730,112 @@ def handle_chat_message(args):
     else:
           say(message)
 
-##MDD10 speed and movement controls
-#def moveMDD10(command, speedPercent):
-#    if command == 'F':
-#	   GPIO.output(DIG1, GPIO.LOW)
-#	   GPIO.output(DIG2, GPIO.LOW)
-#	   p1.start(speedPercent)  # set speed for M1
-#	   p2.start(speedPercent)  # set speed for M2
-#	   time.sleep(straightDelay)
-#    if command == 'B':
-#	   GPIO.output(DIG1, GPIO.HIGH)
-#	   GPIO.output(DIG2, GPIO.HIGH)
-#	   p1.start(speedPercent)
-#	   p2.start(speedPercent)
-#	   time.sleep(straightDelay)
-#    if command == 'L':
-#	   GPIO.output(DIG1, GPIO.LOW)
-#	   GPIO.output(DIG2, GPIO.HIGH)
-#	   p1.start(speedPercent)
-#	   p2.start(speedPercent)
-#	   time.sleep(turnDelay)
-#    if command == 'R':
-#	   GPIO.output(DIG1, GPIO.HIGH)
-#	   GPIO.output(DIG2, GPIO.LOW)
-#	   p1.start(speedPercent)
-#	   p2.start(speedPercent)
-#	   time.sleep(turnDelay)
+#MDD10 speed and movement controls
+def moveMDD10(command, speedPercent):
+    if command == 'F':
+	   GPIO.output(DIG1, GPIO.LOW)
+	   GPIO.output(DIG2, GPIO.LOW)
+	   p1.start(speedPercent)  # set speed for M1
+	   p2.start(speedPercent)  # set speed for M2
+	   time.sleep(straightDelay)
+    if command == 'B':
+	   GPIO.output(DIG1, GPIO.HIGH)
+	   GPIO.output(DIG2, GPIO.HIGH)
+	   p1.start(speedPercent)
+	   p2.start(speedPercent)
+	   time.sleep(straightDelay)
+    if command == 'L':
+	   GPIO.output(DIG1, GPIO.LOW)
+	   GPIO.output(DIG2, GPIO.HIGH)
+	   p1.start(speedPercent)
+	   p2.start(speedPercent)
+	   time.sleep(turnDelay)
+    if command == 'R':
+	   GPIO.output(DIG1, GPIO.HIGH)
+	   GPIO.output(DIG2, GPIO.LOW)
+	   p1.start(speedPercent)
+	   p2.start(speedPercent)
+	   time.sleep(turnDelay)
 
 
-#def moveAdafruitPWM(command):
-#    print "move adafruit pwm command", command
-#
-#    if command == 'L':
-#        pwm.setPWM(1, 0, 300) # turn left
-#        pwm.setPWM(0, 0, 445) # drive forward
-#        time.sleep(0.5)
-#        pwm.setPWM(1, 0, 400) # turn neutral
-#        pwm.setPWM(0, 0, 335) # drive neutral
-#
-#    if command == 'R':
-#        pwm.setPWM(1, 0, 500) # turn right
-#        pwm.setPWM(0, 0, 445) # drive forward
-#        time.sleep(0.5)
-#        pwm.setPWM(1, 0, 400) # turn neutral
-#        pwm.setPWM(0, 0, 335) # drive neutral
-#
-#    if command == 'BL':
-#        pwm.setPWM(1, 0, 300) # turn left
-#        pwm.setPWM(0, 0, 270) # drive backward
-#        time.sleep(0.5)
-#        pwm.setPWM(1, 0, 400) # turn neutral
-#        pwm.setPWM(0, 0, 335) # drive neutral
-#
-#    if command == 'BR':
-#        pwm.setPWM(1, 0, 500) # turn right
-#        pwm.setPWM(0, 0, 270) # drive backward
-#        time.sleep(0.5)
-#        pwm.setPWM(1, 0, 400) # turn neurtral
-#        pwm.setPWM(0, 0, 335) # drive neutral
-#
-#
-#    if command == 'F':
-#        pwm.setPWM(0, 0, 445) # drive forward
-#        time.sleep(0.3)
-#        pwm.setPWM(0, 0, 345) # drive slowly forward
-#        time.sleep(0.4)
-#        pwm.setPWM(0, 0, 335) # drive neutral
-#    if command == 'B':
-#        pwm.setPWM(0, 0, 270) # drive backward
-#        time.sleep(0.3)
-#        pwm.setPWM(0, 0, 325) # drive slowly backward
-#        time.sleep(0.4)
-#        pwm.setPWM(0, 0, 335) # drive neutral
-#
-#    if command == 'S2INC': # neutral
-#        pwm.setPWM(2, 0, 300)
-#
-#    if command == 'S2DEC':
-#        pwm.setPWM(2, 0, 400)
-#
-#    if command == 'POS60':
-#        pwm.setPWM(2, 0, 490)
-#
-#    if command == 'NEG60':
-#        pwm.setPWM(2, 0, 100)
+def moveAdafruitPWM(command):
+    print "move adafruit pwm command", command
+
+    if command == 'L':
+        pwm.setPWM(1, 0, 300) # turn left
+        pwm.setPWM(0, 0, 445) # drive forward
+        time.sleep(0.5)
+        pwm.setPWM(1, 0, 400) # turn neutral
+        pwm.setPWM(0, 0, 335) # drive neutral
+
+    if command == 'R':
+        pwm.setPWM(1, 0, 500) # turn right
+        pwm.setPWM(0, 0, 445) # drive forward
+        time.sleep(0.5)
+        pwm.setPWM(1, 0, 400) # turn neutral
+        pwm.setPWM(0, 0, 335) # drive neutral
+
+    if command == 'BL':
+        pwm.setPWM(1, 0, 300) # turn left
+        pwm.setPWM(0, 0, 270) # drive backward
+        time.sleep(0.5)
+        pwm.setPWM(1, 0, 400) # turn neutral
+        pwm.setPWM(0, 0, 335) # drive neutral
+
+    if command == 'BR':
+        pwm.setPWM(1, 0, 500) # turn right
+        pwm.setPWM(0, 0, 270) # drive backward
+        time.sleep(0.5)
+        pwm.setPWM(1, 0, 400) # turn neurtral
+        pwm.setPWM(0, 0, 335) # drive neutral
+
+
+    if command == 'F':
+        pwm.setPWM(0, 0, 445) # drive forward
+        time.sleep(0.3)
+        pwm.setPWM(0, 0, 345) # drive slowly forward
+        time.sleep(0.4)
+        pwm.setPWM(0, 0, 335) # drive neutral
+    if command == 'B':
+        pwm.setPWM(0, 0, 270) # drive backward
+        time.sleep(0.3)
+        pwm.setPWM(0, 0, 325) # drive slowly backward
+        time.sleep(0.4)
+        pwm.setPWM(0, 0, 335) # drive neutral
+
+    if command == 'S2INC': # neutral
+        pwm.setPWM(2, 0, 300)
+
+    if command == 'S2DEC':
+        pwm.setPWM(2, 0, 400)
+
+    if command == 'POS60':
+        pwm.setPWM(2, 0, 490)
+
+    if command == 'NEG60':
+        pwm.setPWM(2, 0, 100)
 
 
 
 
 
-#def moveGoPiGo2(command):
-#    if command == 'L':
-#        gopigo.left_rot()
-#        time.sleep(0.15)
-#        gopigo.stop()
-#    if command == 'R':
-#        gopigo.right_rot()
-#        time.sleep(0.15)
-#        gopigo.stop()
-#    if command == 'F':
-#        gopigo.forward()
-#        time.sleep(0.35)
-#        gopigo.stop()
-#    if command == 'B':
-#        gopigo.backward()
-#        time.sleep(0.35)
-#        gopigo.stop()
+def moveGoPiGo2(command):
+    if command == 'L':
+        gopigo.left_rot()
+        time.sleep(0.15)
+        gopigo.stop()
+    if command == 'R':
+        gopigo.right_rot()
+        time.sleep(0.15)
+        gopigo.stop()
+    if command == 'F':
+        gopigo.forward()
+        time.sleep(0.35)
+        gopigo.stop()
+    if command == 'B':
+        gopigo.backward()
+        time.sleep(0.35)
+        gopigo.stop()
 
 
 
@@ -838,26 +870,26 @@ def handleMaxSpeedCommand():
     
 
 
-#def moveGoPiGo3(command):
-#    e = easyGoPiGo3
-#    if command == 'L':
-#        e.set_motor_dps(e.MOTOR_LEFT, -e.get_speed())
-#        e.set_motor_dps(e.MOTOR_RIGHT, e.get_speed())
-#        time.sleep(0.15)
-#        easyGoPiGo3.stop()
-#    if command == 'R':
-#        e.set_motor_dps(e.MOTOR_LEFT, e.get_speed())
-#        e.set_motor_dps(e.MOTOR_RIGHT, -e.get_speed())
-#        time.sleep(0.15)
-#        easyGoPiGo3.stop()
-#    if command == 'F':
-#        easyGoPiGo3.forward()
-#        time.sleep(0.35)
-#        easyGoPiGo3.stop()
-#    if command == 'B':
-#        easyGoPiGo3.backward()
-#        time.sleep(0.35)
-#        easyGoPiGo3.stop()
+def moveGoPiGo3(command):
+    e = easyGoPiGo3
+    if command == 'L':
+        e.set_motor_dps(e.MOTOR_LEFT, -e.get_speed())
+        e.set_motor_dps(e.MOTOR_RIGHT, e.get_speed())
+        time.sleep(0.15)
+        easyGoPiGo3.stop()
+    if command == 'R':
+        e.set_motor_dps(e.MOTOR_LEFT, e.get_speed())
+        e.set_motor_dps(e.MOTOR_RIGHT, -e.get_speed())
+        time.sleep(0.15)
+        easyGoPiGo3.stop()
+    if command == 'F':
+        easyGoPiGo3.forward()
+        time.sleep(0.35)
+        easyGoPiGo3.stop()
+    if command == 'B':
+        easyGoPiGo3.backward()
+        time.sleep(0.35)
+        easyGoPiGo3.stop()
 
 
     
@@ -941,7 +973,11 @@ def handle_command(args):
                 owi_arm.handleOwiArm(command)
 
             if commandArgs.type == 'serial':
-                robot_util.sendSerialCommand(ser, command)
+                try:
+                    robot_util.sendSerialCommand(ser, command)
+                except Exception as exception:
+                    print exception
+                    setup_serial()
 
             if commandArgs.type == 'motor_hat' and motorsEnabled:
                 motorA.setSpeed(drivingSpeed)
@@ -1035,122 +1071,122 @@ def handle_command(args):
         handlingCommand = False
 
 	   
-#def runl298n(direction):
-#    if direction == 'F':
-#        GPIO.output(StepPinForward, GPIO.HIGH)
-#        time.sleep(l298n_sleeptime * l298n_rotatetimes)
-#        GPIO.output(StepPinForward, GPIO.LOW)
-#    if direction == 'B':
-#        GPIO.output(StepPinBackward, GPIO.HIGH)
-#        time.sleep(l298n_sleeptime * l298n_rotatetimes)
-#        GPIO.output(StepPinBackward, GPIO.LOW)
-#    if direction == 'L':
-#        GPIO.output(StepPinLeft, GPIO.HIGH)
-#        time.sleep(l298n_sleeptime)
-#        GPIO.output(StepPinLeft, GPIO.LOW)
-#    if direction == 'R':
-#        GPIO.output(StepPinRight, GPIO.HIGH)
-#        time.sleep(l298n_sleeptime)
-#        GPIO.output(StepPinRight, GPIO.LOW)
+def runl298n(direction):
+    if direction == 'F':
+        GPIO.output(StepPinForward, GPIO.HIGH)
+        time.sleep(l298n_sleeptime * l298n_rotatetimes)
+        GPIO.output(StepPinForward, GPIO.LOW)
+    if direction == 'B':
+        GPIO.output(StepPinBackward, GPIO.HIGH)
+        time.sleep(l298n_sleeptime * l298n_rotatetimes)
+        GPIO.output(StepPinBackward, GPIO.LOW)
+    if direction == 'L':
+        GPIO.output(StepPinLeft, GPIO.HIGH)
+        time.sleep(l298n_sleeptime)
+        GPIO.output(StepPinLeft, GPIO.LOW)
+    if direction == 'R':
+        GPIO.output(StepPinRight, GPIO.HIGH)
+        time.sleep(l298n_sleeptime)
+        GPIO.output(StepPinRight, GPIO.LOW)
 
-#def runmotozero(direction):
-#    if direction == 'F':
-#        GPIO.output(Motor1B, GPIO.HIGH)
-#        GPIO.output(Motor1Enable,GPIO.HIGH)
-#
-#        GPIO.output(Motor2B, GPIO.HIGH)
-#        GPIO.output(Motor2Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor3A, GPIO.HIGH)
-#        GPIO.output(Motor3Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor4B, GPIO.HIGH)
-#        GPIO.output(Motor4Enable, GPIO.HIGH)
-#
-#        time.sleep(0.3)
-#
-#        GPIO.output(Motor1B, GPIO.LOW)
-#        GPIO.output(Motor2B, GPIO.LOW)
-#        GPIO.output(Motor3A, GPIO.LOW)
-#        GPIO.output(Motor4B, GPIO.LOW)
-#    if direction == 'B':
-#        GPIO.output(Motor1A, GPIO.HIGH)
-#        GPIO.output(Motor1Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor2A, GPIO.HIGH)
-#        GPIO.output(Motor2Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor3B, GPIO.HIGH)
-#        GPIO.output(Motor3Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor4A, GPIO.HIGH)
-#        GPIO.output(Motor4Enable, GPIO.HIGH)
-#
-#        time.sleep(0.3)
-#
-#        GPIO.output(Motor1A, GPIO.LOW)
-#        GPIO.output(Motor2A, GPIO.LOW)
-#        GPIO.output(Motor3B, GPIO.LOW)
-#        GPIO.output(Motor4A, GPIO.LOW)
-#
-#    if direction =='L':
-#        GPIO.output(Motor3B, GPIO.HIGH)
-#        GPIO.output(Motor3Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor1A, GPIO.HIGH)
-#        GPIO.output(Motor1Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor2B, GPIO.HIGH)
-#        GPIO.output(Motor2Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor4B, GPIO.HIGH)
-#        GPIO.output(Motor4Enable, GPIO.HIGH)
-#
-#        time.sleep(0.3)
-#
-#        GPIO.output(Motor3B, GPIO.LOW)
-#        GPIO.output(Motor1A, GPIO.LOW)
-#        GPIO.output(Motor2B, GPIO.LOW)
-#        GPIO.output(Motor4B, GPIO.LOW)
-#
-#    if direction == 'R':
-#        GPIO.output(Motor3A, GPIO.HIGH)
-#        GPIO.output(Motor3Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor1B, GPIO.HIGH)
-#        GPIO.output(Motor1Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor2A, GPIO.HIGH)
-#        GPIO.output(Motor2Enable, GPIO.HIGH)
-#
-#        GPIO.output(Motor4A, GPIO.HIGH)
-#        GPIO.output(Motor4Enable, GPIO.HIGH)
-#
-#        time.sleep(0.3)
-#
-#        GPIO.output(Motor3A, GPIO.LOW)
-#        GPIO.output(Motor1B, GPIO.LOW)
-#        GPIO.output(Motor2A, GPIO.LOW)
-#        GPIO.output(Motor4A, GPIO.LOW)
-#	
-#def runPololu(direction):
-#    drivingSpeed = commandArgs.driving_speed
-#    if direction == 'F':
-#	      motors.setSpeeds(drivingSpeed, drivingSpeed)
-#	      time.sleep(0.3)
-#	      motors.setSpeeds(0, 0)
-#    if direction == 'B':
-#	      motors.setSpeeds(-drivingSpeed, -drivingSpeed)
-#	      time.sleep(0.3)
-#	      motors.setSpeeds(0, 0)
-#    if direction == 'L':
-#	      motors.setSpeeds(-drivingSpeed, drivingSpeed)
-#	      time.sleep(0.3)
-#	      motors.setSpeeds(0, 0)
-#    if direction == 'R':
-#	      motors.setSpeeds(drivingSpeed, -drivingSpeed)
-#	      time.sleep(0.3)
-#	      motors.setSpeeds(0, 0)
+def runmotozero(direction):
+    if direction == 'F':
+        GPIO.output(Motor1B, GPIO.HIGH)
+        GPIO.output(Motor1Enable,GPIO.HIGH)
+
+        GPIO.output(Motor2B, GPIO.HIGH)
+        GPIO.output(Motor2Enable, GPIO.HIGH)
+
+        GPIO.output(Motor3A, GPIO.HIGH)
+        GPIO.output(Motor3Enable, GPIO.HIGH)
+
+        GPIO.output(Motor4B, GPIO.HIGH)
+        GPIO.output(Motor4Enable, GPIO.HIGH)
+
+        time.sleep(0.3)
+
+        GPIO.output(Motor1B, GPIO.LOW)
+        GPIO.output(Motor2B, GPIO.LOW)
+        GPIO.output(Motor3A, GPIO.LOW)
+        GPIO.output(Motor4B, GPIO.LOW)
+    if direction == 'B':
+        GPIO.output(Motor1A, GPIO.HIGH)
+        GPIO.output(Motor1Enable, GPIO.HIGH)
+
+        GPIO.output(Motor2A, GPIO.HIGH)
+        GPIO.output(Motor2Enable, GPIO.HIGH)
+
+        GPIO.output(Motor3B, GPIO.HIGH)
+        GPIO.output(Motor3Enable, GPIO.HIGH)
+
+        GPIO.output(Motor4A, GPIO.HIGH)
+        GPIO.output(Motor4Enable, GPIO.HIGH)
+
+        time.sleep(0.3)
+
+        GPIO.output(Motor1A, GPIO.LOW)
+        GPIO.output(Motor2A, GPIO.LOW)
+        GPIO.output(Motor3B, GPIO.LOW)
+        GPIO.output(Motor4A, GPIO.LOW)
+
+    if direction =='L':
+        GPIO.output(Motor3B, GPIO.HIGH)
+        GPIO.output(Motor3Enable, GPIO.HIGH)
+
+        GPIO.output(Motor1A, GPIO.HIGH)
+        GPIO.output(Motor1Enable, GPIO.HIGH)
+
+        GPIO.output(Motor2B, GPIO.HIGH)
+        GPIO.output(Motor2Enable, GPIO.HIGH)
+
+        GPIO.output(Motor4B, GPIO.HIGH)
+        GPIO.output(Motor4Enable, GPIO.HIGH)
+
+        time.sleep(0.3)
+
+        GPIO.output(Motor3B, GPIO.LOW)
+        GPIO.output(Motor1A, GPIO.LOW)
+        GPIO.output(Motor2B, GPIO.LOW)
+        GPIO.output(Motor4B, GPIO.LOW)
+
+    if direction == 'R':
+        GPIO.output(Motor3A, GPIO.HIGH)
+        GPIO.output(Motor3Enable, GPIO.HIGH)
+
+        GPIO.output(Motor1B, GPIO.HIGH)
+        GPIO.output(Motor1Enable, GPIO.HIGH)
+
+        GPIO.output(Motor2A, GPIO.HIGH)
+        GPIO.output(Motor2Enable, GPIO.HIGH)
+
+        GPIO.output(Motor4A, GPIO.HIGH)
+        GPIO.output(Motor4Enable, GPIO.HIGH)
+
+        time.sleep(0.3)
+
+        GPIO.output(Motor3A, GPIO.LOW)
+        GPIO.output(Motor1B, GPIO.LOW)
+        GPIO.output(Motor2A, GPIO.LOW)
+        GPIO.output(Motor4A, GPIO.LOW)
+	
+def runPololu(direction):
+    drivingSpeed = commandArgs.driving_speed
+    if direction == 'F':
+	      motors.setSpeeds(drivingSpeed, drivingSpeed)
+	      time.sleep(0.3)
+	      motors.setSpeeds(0, 0)
+    if direction == 'B':
+	      motors.setSpeeds(-drivingSpeed, -drivingSpeed)
+	      time.sleep(0.3)
+	      motors.setSpeeds(0, 0)
+    if direction == 'L':
+	      motors.setSpeeds(-drivingSpeed, drivingSpeed)
+	      time.sleep(0.3)
+	      motors.setSpeeds(0, 0)
+    if direction == 'R':
+	      motors.setSpeeds(drivingSpeed, -drivingSpeed)
+	      time.sleep(0.3)
+	      motors.setSpeeds(0, 0)
 
 def handleStartReverseSshProcess(args):
     print "starting reverse ssh"
@@ -1228,7 +1264,13 @@ def onHandleChatDisconnect(*args):
     print
     print "chat socket.io disconnect"
     print
-    
+
+def onHandleControlConnect(*args):
+    controlSocketIO.emit('robot_id', robotID)
+
+def onHandleControlReconnect(*args):
+    controlSocketIO.emit('robot_id', robotID)
+
 def onHandleControlDisconnect(*args):
     print
     print "control socket.io disconnect"
@@ -1241,6 +1283,8 @@ def onHandleControlDisconnect(*args):
 #from communication import socketIO
 controlSocketIO.on('command_to_robot', onHandleCommand)
 controlSocketIO.on('disconnect', onHandleControlDisconnect)
+controlSocketIO.on('connect', onHandleControlConnect)
+controlSocketIO.on('reconnect', onHandleControlReconnect)
 
 appServerSocketIO.on('exclusive_control', onHandleExclusiveControl)
 appServerSocketIO.on('connect', onHandleAppServerConnect)
@@ -1274,33 +1318,33 @@ appServerSocketIO.on('end_reverse_ssh_8872381747239', endReverseSshProcess)
 #  thread.start_new_thread(myWait, ())
 
 
-#if commandArgs.type == 'motor_hat':
-#    if motorsEnabled:
-#        # create a default object, no changes to I2C address or frequency
-#        mh = Adafruit_MotorHAT(addr=0x60)
-#        #mhArm = Adafruit_MotorHAT(addr=0x61)
-#    
-#
-#def turnOffMotors():
-#    # pi hat motors
-#    mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
-#    mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-#    mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
-#    mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
-#
-#    
-#def turnOffMotorsMDD10():    
-#    # mdd10 motors
-#    p1.start(0)
-#    p2.start(0)    
-#
-#  
-#
-#if commandArgs.type == 'motor_hat':
-#    if motorsEnabled:
-#        atexit.register(turnOffMotors)
-#        motorA = mh.getMotor(1)
-#        motorB = mh.getMotor(2)
+if commandArgs.type == 'motor_hat':
+    if motorsEnabled:
+        # create a default object, no changes to I2C address or frequency
+        mh = Adafruit_MotorHAT(addr=0x60)
+        #mhArm = Adafruit_MotorHAT(addr=0x61)
+    
+
+def turnOffMotors():
+    # pi hat motors
+    mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+    mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+    mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+    mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+
+    
+def turnOffMotorsMDD10():    
+    # mdd10 motors
+    p1.start(0)
+    p2.start(0)    
+
+  
+
+if commandArgs.type == 'motor_hat':
+    if motorsEnabled:
+        atexit.register(turnOffMotors)
+        motorA = mh.getMotor(1)
+        motorB = mh.getMotor(2)
 
 def ipInfoUpdate():
     appServerSocketIO.emit('ip_information',
@@ -1500,5 +1544,4 @@ while True:
         if platform.system() == 'Linux':
             ipInfoUpdate()
 
-
-waitCounter += 1
+    waitCounter += 1
