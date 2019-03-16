@@ -1,3 +1,5 @@
+# I'm going to stop updating this repo in favor of a new fork based on [Let's Robot Repo](https://www.github.com/letsrobot/letsrobot) instead of the old runmyrobot one. Keep an eye out!
+
 # Let's Robot
 ## Open Robot Control Code for Connecting to LetsRobot.tv
 LetsRobot.tv is a site for interacts with others using telepresence robots. Users create their own robots and add them to the site.
